@@ -19,4 +19,17 @@ executable hie-lsp
   main-is:             Main.hs
   build-depends:       base ^>=4.12.0.0
                      , reflex
+                     , haskell-lsp
+                     , haskell-lsp-types
+                     , hslogger
+                     , rope-utf16-splay
+                     , text
+                     , aeson
+                     , data-default
+                     , stm
+                     , lens
+                     , mtl
+                     , unordered-containers
+                     , reflex-basic-host
   default-language:    Haskell2010
+  ghc-options:       -Wall
