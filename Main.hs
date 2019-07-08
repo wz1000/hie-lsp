@@ -41,38 +41,12 @@ import Reflex
 import Reflex.Host.Basic
 
 -- ---------------------------------------------------------------------
-{-# ANN module ("HLint: ignore Eta reduce"         :: String) #-}
-{-# ANN module ("HLint: ignore Redundant do"       :: String) #-}
-{-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
--- ---------------------------------------------------------------------
 
 main :: IO ()
 main = do
   run (return ()) >>= \case
     0 -> exitSuccess
     c -> exitWith . ExitFailure $ c
-
--- ---------------------------------------------------------------------
-
-type LSPServer t m = BasicGuestConstraints t m
-                  => IO J.LspId
-                  -> Event t FromClientMessage
-                  -> BasicGuest t m (Event t [FromServerMessage])
-
-runLSPServer :: TChan FromClientMessage -> Core.LspFuncs () -> (forall t m. LSPServer t m) -> IO ()
-runLSPServer rin lf network = do
-  let isQuit NotExit{} = True
-      isQuit _ = False
-  basicHostWithQuit $ do
-    (inev, k) <- newTriggerEvent
-    void $ liftIO $ forkIO $ forever $ do
-      inval <- atomically $ readTChan rin
-      k inval
-    oev <- network (Core.getNextReqId lf) inev
-    performEvent_ $ oev <&> (mapM_ $ \msg ->
-        liftIO $ Core.sendFunc lf msg)
-    let quitEv = void $ ffilter isQuit inev
-    pure ((),quitEv)
 
 run :: IO () -> IO Int
 run dispatcherProc = flip E.catches handlers $ do
@@ -99,6 +73,26 @@ run dispatcherProc = flip E.catches handlers $ do
     ioExcept   (e :: E.IOException)       = print e >> return 1
     someExcept (e :: E.SomeException)     = print e >> return 1
 
+type LSPServer t m = BasicGuestConstraints t m
+                  => IO J.LspId
+                  -> Event t FromClientMessage
+                  -> BasicGuest t m (Event t [FromServerMessage])
+
+runLSPServer :: TChan FromClientMessage -> Core.LspFuncs () -> (forall t m. LSPServer t m) -> IO ()
+runLSPServer rin lf network = do
+  let isQuit NotExit{} = True
+      isQuit _ = False
+  basicHostWithQuit $ do
+    (inev, k) <- newTriggerEvent
+    void $ liftIO $ forkIO $ forever $ do
+      inval <- atomically $ readTChan rin
+      k inval
+    oev <- network (Core.getNextReqId lf) inev
+    performEvent_ $ oev <&> (mapM_ $ \msg ->
+        liftIO $ Core.sendFunc lf msg)
+    let quitEv = void $ ffilter isQuit inev
+    pure ((),quitEv)
+
 -- ---------------------------------------------------------------------
 
 net :: LSPServer t m
@@ -116,26 +110,6 @@ net getNext iev =
       (NotInitialized _notification) -> do
         liftIO $ U.logm "****** reactor: processing Initialized Notification"
         -- Server is ready, register any specific capabilities we need
-
-         {-
-         Example:
-         {
-                 "method": "client/registerCapability",
-                 "params": {
-                         "registrations": [
-                                 {
-                                         "id": "79eee87c-c409-4664-8102-e03263673f6f",
-                                         "method": "textDocument/willSaveWaitUntil",
-                                         "registerOptions": {
-                                                 "documentSelector": [
-                                                         { "language": "javascript" }
-                                                 ]
-                                         }
-                                 }
-                         ]
-                 }
-         }
-        -}
         let
           registration = J.Registration "lsp-hello-registered" J.WorkspaceExecuteCommand Nothing
         let registrations = J.RegistrationParams (J.List [registration])
@@ -145,7 +119,6 @@ net getNext iev =
           params = J.ShowMessageRequestParams J.MtWarning "choose an option for XXX"
                            (Just [J.MessageActionItem "option a", J.MessageActionItem "option b"])
         rid1 <- nextLspReqId
-
         pure [ ReqRegisterCapability $ fmServerRegisterCapabilityRequest rid registrations
              , ReqShowMessage $ fmServerShowMessageRequest rid1 params
              ]
