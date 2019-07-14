@@ -1,0 +1,9 @@
+[submodule "haskell-lsp"]
+	path = haskell-lsp
+	url = https://github.com/wz1000/haskell-lsp
+[submodule "hiedb"]
+	path = hiedb
+	url = https://github.com/wz1000/hiedb
+[submodule "reflex-basic-host"]
+	path = reflex-basic-host
+	url = https://github.com/wz1000/reflex-basic-host
