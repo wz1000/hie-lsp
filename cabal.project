@@ -2,7 +2,17 @@
 
 with-compiler: /home/zubin/ghc-8.8-alpha/bin/ghc
 
-packages: . ./cabal-doctest-1.0.6/ ./exception-transformers-0.4.0.7/ ./reflex-0.6.1/
+packages: . 
+          ./cabal-doctest-1.0.6/ 
+          ./exception-transformers-0.4.0.7/ 
+          ./reflex-0.6.1/ 
+          ./haskell-lsp 
+          ./haskell-lsp/haskell-lsp-types
+          ./dependent-sum-template-0.0.0.6/
+          ./reflex-basic-host
+          ./hiedb/
+          ./hiedb/sqlite-simple-0.4.16.0/
+          ./hiedb/ghc-paths-0.1.0.9/
 
 repository head.hackage
    url: http://head.hackage.haskell.org/

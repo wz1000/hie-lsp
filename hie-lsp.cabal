@@ -18,6 +18,7 @@ extra-source-files:  CHANGELOG.md
 executable hie-lsp
   main-is:             Main.hs
   build-depends:       base ^>=4.12.0.0
+                     , containers
                      , reflex
                      , haskell-lsp
                      , haskell-lsp-types
@@ -26,10 +27,16 @@ executable hie-lsp
                      , text
                      , aeson
                      , data-default
+                     , dependent-map
                      , stm
                      , lens
                      , mtl
                      , unordered-containers
                      , reflex-basic-host
+                     , hiedb
+                     , ghc
+                     , ghc-paths
+                     , time
+                     , directory
   default-language:    Haskell2010
   ghc-options:       -Wall
